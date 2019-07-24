@@ -7,4 +7,4 @@ Youtube-dl Nodejs backend server for Trooveo
     - download(different bitrate option, ffmpeg encoding to mp3).
     - sql database integration.
     - history, playlist, sets(user playlists).
-    - many more features coming in the future.
+    - many more features will be coming in the future.
