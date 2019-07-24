@@ -1,7 +1,7 @@
 # YouMusic
 Youtube-dl Nodejs backend server for Trooveo
 
-#Features
+# Features
     - search
     - fetch video infos(title, thumb, channel, duration, date, etc..).
     - download(different bitrate option, ffmpeg encoding to mp3).
