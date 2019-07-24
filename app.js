@@ -94,22 +94,6 @@ global.pool = mysql.createPool({
     connectionLimit: '100'
 });
 
-// global.pool = mysql.createPool({
-//     host     : 'http://trooveo.com',
-//     user     : 'trooxedi_joe',
-//     password : 'pizzajoe85',
-//     database : 'trooxedi_trooveo',
-//     connectionLimit: '100'
-// });
 
-// connection.connect(function(err) {
-//     if (err) {
-//         console.error('error connecting: ' + err.stack);
-//         return;
-//     }
-//
-//     console.log('connected as id ' + connection.threadId);
-//
-// });
 
 module.exports = app;
