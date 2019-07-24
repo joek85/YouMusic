@@ -89,8 +89,8 @@ app.use(function(err, req, res, next) {
 global.pool = mysql.createPool({
     host     : 'localhost',
     user     : 'root',
-    password : 'pizza',
-    database : 'musiclab',
+    password : 'pass',
+    database : 'youmusic',
     connectionLimit: '100'
 });
 
