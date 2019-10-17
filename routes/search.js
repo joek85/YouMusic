@@ -43,51 +43,42 @@ router.get('/', function(req, res, next) {
     //     console.log(items);
     //     res.json({items: items})
     // });
-
+    var ref = req.query['nexttoken'];
+    var refstr = '/results?search_query='+query+'&sp=' + ref;
     ytsr.getFilters(query, function(err, filters) {
         if (err) throw err;
+
         filter = filters.get('Type').find(function(o){
             return o.name === 'Video'
         });
+         console.log(filters);
         var options = {
-            limit: 30,
-            nextpageRef: filter.ref
+            limit: 25,
+            nextpageRef: ref !== undefined ? refstr :filter.ref
         };
         ytsr(null, options, function(err, searchResults) {
             if(err){
                 res.json(err)
             }else{
-                var results = parseresults(searchResults.items);
-                //console.log(results);
+                var results = parseresults(searchResults);
+                // console.log(results);
                 res.json(results)
             }
 
         });
     });
-    // request.get({url:searchvar ,json: true, qs: {
-    //     part: 'snippet',
-    //     type: 'video',
-    //     videoCategoryId: '10',
-    //     q: query,
-    //     maxResults: '25',
-    //     fields:'items/id/videoId,nextPageToken,pageInfo/totalResults',
-    //     pageToken:nextPageToken !== undefined ? nextPageToken : '',
-    //     key:'AIzaSyAIcY4I-8xigi1hK9n_W37652lAXbym2pM'}}, function(error, response, body) {
-    //     if(error){
-    //         res.json(error);
-    //         console.log(error)
-    //     }else{
-    //         //console.log(body);
-    //         res.json(body)
-    //     }
-    // });
+
 
 });
 function parseresults(results) {
     var items = [];
-    for ( var i = 0; i < results.length; i++ ) {
-        items.push({id: {videoId: results[i].link.split('v=')[1]}, title : results[i].title, subtitle: results[i].author.name, duration: results[i].duration, play_counts: results[i].views, published_at: results[i].uploaded_at, thumbnail: results[i].thumbnail.split('?'[0])})
+    var arr = [];
+    items.push({nextpageRef:results.nextpageRef.split('&sp=')[1]});
+
+    for ( var i = 0; i < results.items.length; i++ ) {
+        arr.push({id: {videoId: results.items[i].link.split('v=')[1]}, title : results.items[i].title, subtitle: results.items[i].author.name, channel_id:results.items[i].author.ref, duration: results.items[i].duration, play_counts: results.items[i].views, published_at: results.items[i].uploaded_at, thumbnail: results.items[i].thumbnail.split('?')[0]})
     }
+    items.push({data: arr});
     return items
 }
 router.get('/suggestion', function(req, res, next) {

@@ -1,7 +1,8 @@
 var express = require('express');
 var router = express.Router();
 var request = require('request');
-//var ytdl = require('youtube-dl');
+var yotdl = require('youtube-dl');
+const youtubeStream = require('youtube-audio-stream');
 var fs = require('fs');
 var mediadir = process.cwd() + '/media/';
 var playerquery = 'https://www.googleapis.com/youtube/v3/videos';
@@ -11,8 +12,10 @@ const ytdl = require('ytdl-core');
 router.get('/', function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     var id = req.query['id'];
-    console.log('Process id ' + id);
-    var sql = 'SELECT * FROM infos WHERE id = ?';
+    var user = req.query['user'];
+    var d = req.query['d'];
+    console.log(videourl + id)
+    //var sql = 'SELECT * FROM infos WHERE id = ?';
     // query(sql,[id],function (err, result) {
     //     'use strict';
     //     if(result && result.length){
@@ -67,34 +70,68 @@ router.get('/', function(req, res, next) {
                 duration: videodetails.lengthSeconds, play_counts: videodetails.viewCount, published_at: info.published,
                 description: videodetails.shortDescription, tags: videodetails.keywords, channel_id: videodetails.channelId,
                 formats: parseFormats(formats), related: related}];
-            //console.log((out));
-            console.log(videodetails.thumbnail.thumbnails[0].url.split('hqdefault')[0] + 'maxresdefault.jpg');
-            console.log(videodetails.thumbnail.thumbnails);
+            //console.log(info);
+            // console.log(videodetails.thumbnail.thumbnails[0].url.split('hqdefault')[0] + 'maxresdefault.jpg');
+            // console.log(videodetails.thumbnail.thumbnails);
+            if(user !== null && user !== undefined){
+                database_insert_item_history(user,id,d,videodetails.channelId,videodetails.title,videodetails.author,videodetails.thumbnail.thumbnails[0].url,videodetails.lengthSeconds
+                   ,videodetails.viewCount,info.published,videodetails.keywords)
+            }
+
+        //     ytdl(videourl + id, { filter: info.formats.container === 'mp4' })
+        // .pipe(fs.createWriteStream('video.mp4'));
             res.json(out)
         }
     });
+    // var requestUrl = videourl + id;
+    // try {
+    //     youtubeStream(requestUrl).pipe(res)
+    // } catch (exception) {
+    //     res.status(500).send(exception)
+    // }
+    // getAudio(req,res)
+    // yotdl( videourl + id,['-x']).pipe(fs.createWriteStream('video.mp4'));
+
+    // yotdl.exec(videourl+id, ['-f', '94', '--no-part'], {}, function exec(err, output) {
+    //     if(err) {
+    //         console.log(err);
+    //         //res.json(err)
+    //     }else{
+    //         console.log(output);
+    //         //database_insert_medias(id,id +'/' + title + '(' + bitrate + 'Kbps)' + '.mp3', bitrate);
+    //         // res.json({
+    //         //     res: 'done'
+    //         // });
+    //         // mp3: 'http://localhost:3001/' + id + '/' + title + '(' + bitrate + 'Kbps)' + '.mp3'
+    //     }
+    // })
+    // yotdl.exec(videourl+id, ['-x','--no-part', '--write-all-thumbnails', '--no-post-overwrites', '--audio-format', 'mp3',
+    //     '--audio-quality', '320' + 'K', '--embed-thumbnail', '-o', id +'/%(title)s' + '(' + '320' + 'Kbps)' + '.%(ext)s', '--prefer-ffmpeg'], {}, function exec(err, output) {
+    //     if(err) {
+    //         console.log(err);
+    //         // res.json(err)
+    //     }else{
+    //         console.log(output);
+    //         //database_insert_medias(id,id +'/' + title + '(' + bitrate + 'Kbps)' + '.mp3', bitrate);
+    //         // res.json({
+    //         //     res: 'done'
+    //         // });
+    //         // mp3: 'http://localhost:3001/' + id + '/' + title + '(' + bitrate + 'Kbps)' + '.mp3'
+    //     }
+    // })
 });
+var getAudio = function (req, res) {
+    var requestUrl = 'http://youtube.com/watch?v=' + req.query['id'];
+    try {
+        youtubeStream(requestUrl).pipe(res)
+    } catch (exception) {
+        res.status(500).send(exception)
+    }
+};
 router.get('/mostpopular', function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     var nextPageToken = req.query['nexttoken'];
 
-    request.get({url:playerquery ,json: true, qs: {
-        part: 'snippet,contentDetails,statistics',
-        type: 'video',
-        videoCategoryId: '10',
-        chart: 'mostPopular',
-        regionCode: 'US',
-        maxResults: '50',
-        pageToken:nextPageToken !== undefined ? nextPageToken : '',
-        key:'AIzaSyAIcY4I-8xigi1hK9n_W37652lAXbym2pM'}}, function(error, response, body) {
-        if(error){
-            console.log(error);
-            res.json(error)
-        }else{
-            //console.log(body);
-            res.json(body)
-        }
-    });
 });
 router.get('/related', function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
@@ -102,22 +139,7 @@ router.get('/related', function(req, res, next) {
     var id = req.query['id'];
     // console.log(nextPageToken);
     // console.log(id);
-    request.get({url:relatedquery ,json: true, qs: {
-        part: 'snippet',
-        type: 'video',
-        videoCategoryId: '10',
-        relatedToVideoId: id,
-        maxResults: '30',
-        pageToken:nextPageToken !== undefined ? nextPageToken : '',
-        fields:'items/id/videoId,nextPageToken',
-        key:'AIzaSyAIcY4I-8xigi1hK9n_W37652lAXbym2pM'}}, function(error, response, body) {
-        if(error){
-            res.json(error)
-        }else{
-            //console.log(body);
-            res.json(body)
-        }
-    });
+
 });
 router.get('/media', function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
@@ -295,6 +317,17 @@ function database_insert_item_infos(_id,_channelid, _title, _chan, _thumb, _dur,
             console.log(err)
         }else{
              //console.log(result);
+        }
+    });
+}
+function database_insert_item_history(_userid, _mediaid, d,_channelid, _title, _chan, _thumb, _dur, _plays, _pub, _tags) {
+    var data = {user_id: _userid, media_id:_mediaid, date:d, channel_id: _channelid, title:_title, channel_name:_chan, thumbnail:_thumb, duration_hms:_dur, play_counts:_plays, published_at: _pub, tags: JSON.stringify(_tags)};
+    var sql = 'INSERT INTO history SET ?';
+    query(sql,[data],function (err, result) {
+        if(err){
+            console.log(err)
+        }else{
+            //console.log(result);
         }
     });
 }

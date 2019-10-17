@@ -89,11 +89,20 @@ app.use(function(err, req, res, next) {
 global.pool = mysql.createPool({
     host     : 'localhost',
     user     : 'root',
-    password : 'pass',
-    database : 'youmusic',
+    password : 'pizza',
+    database : 'musiclab',
     connectionLimit: '100'
 });
 
 
+// connection.connect(function(err) {
+//     if (err) {
+//         console.error('error connecting: ' + err.stack);
+//         return;
+//     }
+//
+//     console.log('connected as id ' + connection.threadId);
+//
+// });
 
 module.exports = app;
